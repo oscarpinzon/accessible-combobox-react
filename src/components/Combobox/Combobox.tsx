@@ -21,15 +21,15 @@ export const Combobox: React.FC<ComboboxProps> = ({
   const inputRef = useRef<HTMLInputElement>(null);
   const suggestionListRef = useRef<HTMLUListElement>(null);
 
-  // Limit displayed suggestions
+  const listboxId = `${id}-listbox`;
+  const labelId = `${id}-label`;
+
   const displayedOptions = options.slice(0, maxDisplayed);
 
-  // Check if current value is an exact match
   const hasExactMatch = options.some(
     (option) => option.value.toLowerCase() === value.toLowerCase(),
   );
 
-  // Show suggestions when criteria met
   useEffect(() => {
     setIsSuggestionVisible(
       value.length >= minCharsForSuggestions &&
@@ -38,7 +38,6 @@ export const Combobox: React.FC<ComboboxProps> = ({
     );
   }, [value, options, hasExactMatch, minCharsForSuggestions]);
 
-  // Reset selected index when options list changes
   useEffect(() => {
     setSelectedIndex(-1);
   }, [options]);
@@ -97,7 +96,7 @@ export const Combobox: React.FC<ComboboxProps> = ({
 
   return (
     <div className={styles.container}>
-      <label htmlFor={id} className={styles.label}>
+      <label id={labelId} htmlFor={id} className={styles.label}>
         {label}
       </label>
       <div className={styles.wrapper}>
@@ -105,6 +104,11 @@ export const Combobox: React.FC<ComboboxProps> = ({
           id={id}
           ref={inputRef}
           type="text"
+          role="combobox"
+          aria-autocomplete="list"
+          aria-expanded={isSuggestionVisible}
+          aria-controls={isSuggestionVisible ? listboxId : undefined}
+          aria-labelledby={labelId}
           value={value}
           onChange={handleInputChange}
           onKeyDown={handleKeyDown}
@@ -113,10 +117,17 @@ export const Combobox: React.FC<ComboboxProps> = ({
         />
 
         {isSuggestionVisible && (
-          <ul ref={suggestionListRef} className={styles.listbox} role="listbox">
+          <ul
+            id={listboxId}
+            ref={suggestionListRef}
+            className={styles.listbox}
+            role="listbox"
+            aria-labelledby={labelId}
+          >
             {displayedOptions.map((option, index) => (
               <li
                 key={option.value}
+                id={`${id}-option-${index}`}
                 role="option"
                 aria-selected={selectedIndex === index}
                 className={
