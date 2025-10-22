@@ -1,0 +1,15 @@
+.app-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  padding: 20px;
+  padding-bottom: 80px;
+  box-sizing: border-box;
+}
+
+.app-container main {
+  max-width: 600px;
+  width: 100%;
+}
