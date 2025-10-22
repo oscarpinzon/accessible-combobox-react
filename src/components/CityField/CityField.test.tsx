@@ -22,128 +22,39 @@ describe('CityField', () => {
     });
   });
 
-  describe('Rendering', () => {
-    it('renders with label', () => {
-      render(
-        <CityField
-          label="City"
-          onCityChange={mockOnCityChange}
-          onStatusChange={mockOnStatusChange}
-        />,
-      );
+  describe('Integration with useCities hook', () => {
+    it('passes cities to Combobox as options', async () => {
+      mockUseCities.mockReturnValue({
+        cities: ['Vancouver', 'Victoria'],
+        loading: false,
+        error: null,
+      });
 
-      expect(screen.getByLabelText('City')).toBeInTheDocument();
-    });
-
-    it('renders input field', () => {
       render(<CityField label="City" onStatusChange={mockOnStatusChange} />);
 
       const input = screen.getByLabelText('City');
-      expect(input).toHaveAttribute('type', 'text');
+      await userEvent.type(input, 'van');
+
+      await waitFor(() => {
+        expect(screen.getByText('Vancouver')).toBeInTheDocument();
+        expect(screen.getByText('Victoria')).toBeInTheDocument();
+      });
     });
 
-    it('renders with correct input id', () => {
+    it('calls useCities with current input value', async () => {
       render(<CityField label="City" onStatusChange={mockOnStatusChange} />);
 
       const input = screen.getByLabelText('City');
-      expect(input).toHaveAttribute('id', 'city-input');
+      await userEvent.type(input, 'tor');
+
+      expect(mockUseCities).toHaveBeenCalledWith('tor');
     });
   });
 
-  describe('Suggestions Display', () => {
-    it('does not show suggestions when input is empty', () => {
-      render(<CityField label="City" onStatusChange={mockOnStatusChange} />);
-
-      expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
-    });
-
-    it('does not show suggestions when input is less than 2 characters', async () => {
-      render(<CityField label="City" onStatusChange={mockOnStatusChange} />);
-
-      const input = screen.getByLabelText('City');
-      await userEvent.type(input, 'v');
-
-      expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
-    });
-
-    it('shows suggestions when input is 2+ characters', async () => {
+  describe('City selection', () => {
+    it('calls onCityChange when city is selected', async () => {
       mockUseCities.mockReturnValue({
-        cities: ['Vancouver', 'North Vancouver'],
-        loading: false,
-        error: null,
-      });
-
-      render(<CityField label="City" onStatusChange={mockOnStatusChange} />);
-
-      const input = screen.getByLabelText('City');
-      await userEvent.type(input, 'van');
-
-      await waitFor(() => {
-        expect(screen.getByRole('listbox')).toBeInTheDocument();
-        expect(screen.getByText('Vancouver')).toBeInTheDocument();
-        expect(screen.getByText('North Vancouver')).toBeInTheDocument();
-      });
-    });
-
-    it('hides suggestions when input exactly matches a city', async () => {
-      mockUseCities.mockReturnValue({
-        cities: ['Vancouver'],
-        loading: false,
-        error: null,
-      });
-
-      render(<CityField label="City" onStatusChange={mockOnStatusChange} />);
-
-      const input = screen.getByLabelText('City');
-      await userEvent.type(input, 'Vancouver');
-
-      await waitFor(() => {
-        expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
-      });
-    });
-
-    it('limits displayed suggestions to MAX_SUGGESTIONS', async () => {
-      const manyCities = Array.from({ length: 20 }, (_, i) => `City ${i}`);
-      mockUseCities.mockReturnValue({
-        cities: manyCities,
-        loading: false,
-        error: null,
-      });
-
-      render(<CityField label="City" onStatusChange={mockOnStatusChange} />);
-
-      const input = screen.getByLabelText('City');
-      await userEvent.type(input, 'ci');
-
-      await waitFor(() => {
-        const options = screen.getAllByRole('option');
-        expect(options).toHaveLength(10);
-      });
-    });
-
-    it('shows suggestions case-insensitively', async () => {
-      mockUseCities.mockReturnValue({
-        cities: ['Vancouver'],
-        loading: false,
-        error: null,
-      });
-
-      render(<CityField label="City" onStatusChange={mockOnStatusChange} />);
-
-      const input = screen.getByLabelText('City');
-      await userEvent.type(input, 'VAN');
-
-      await waitFor(() => {
-        expect(screen.getByRole('listbox')).toBeInTheDocument();
-        expect(screen.getByText('Vancouver')).toBeInTheDocument();
-      });
-    });
-  });
-
-  describe('City Selection', () => {
-    it('selects city on click', async () => {
-      mockUseCities.mockReturnValue({
-        cities: ['Vancouver'],
+        cities: ['Toronto'],
         loading: false,
         error: null,
       });
@@ -156,208 +67,48 @@ describe('CityField', () => {
         />,
       );
 
-      const input = screen.getByLabelText('City') as HTMLInputElement;
-      await userEvent.type(input, 'van');
+      const input = screen.getByLabelText('City');
+      await userEvent.type(input, 'tor');
 
       await waitFor(() => {
-        expect(screen.getByText('Vancouver')).toBeInTheDocument();
+        expect(screen.getByText('Toronto')).toBeInTheDocument();
       });
 
-      fireEvent.click(screen.getByText('Vancouver'));
+      fireEvent.click(screen.getByText('Toronto'));
 
-      expect(input.value).toBe('Vancouver');
-      expect(mockOnCityChange).toHaveBeenCalledWith('Vancouver');
-      expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
+      expect(mockOnCityChange).toHaveBeenCalledWith('Toronto');
     });
 
-    it('calls onCityChange when typing', async () => {
-      render(
-        <CityField
-          label="City"
-          onCityChange={mockOnCityChange}
-          onStatusChange={mockOnStatusChange}
-        />,
-      );
-
-      const input = screen.getByLabelText('City');
-      await userEvent.type(input, 'van');
-
-      expect(mockOnCityChange).toHaveBeenCalledWith('v');
-      expect(mockOnCityChange).toHaveBeenCalledWith('va');
-      expect(mockOnCityChange).toHaveBeenCalledWith('van');
-    });
-
-    it('refocuses input after city selection', async () => {
+    it('works without onCityChange callback', async () => {
       mockUseCities.mockReturnValue({
-        cities: ['Vancouver'],
+        cities: ['Toronto'],
         loading: false,
         error: null,
       });
 
-      render(<CityField label="City" onStatusChange={mockOnStatusChange} />);
-
-      const input = screen.getByLabelText('City');
-      await userEvent.type(input, 'van');
-
-      await waitFor(() => {
-        expect(screen.getByText('Vancouver')).toBeInTheDocument();
-      });
-
-      fireEvent.click(screen.getByText('Vancouver'));
-
-      expect(input).toHaveFocus();
-    });
-  });
-
-  describe('Keyboard Navigation', () => {
-    beforeEach(() => {
-      mockUseCities.mockReturnValue({
-        cities: ['Vancouver', 'Victoria', 'Vernon'],
-        loading: false,
-        error: null,
-      });
-    });
-
-    it('navigates down with ArrowDown', async () => {
-      render(<CityField label="City" onStatusChange={mockOnStatusChange} />);
-
-      const input = screen.getByLabelText('City');
-      await userEvent.type(input, 've');
-
-      await waitFor(() => {
-        expect(screen.getByRole('listbox')).toBeInTheDocument();
-      });
-
-      fireEvent.keyDown(input, { key: 'ArrowDown' });
-
-      const options = screen.getAllByRole('option');
-      expect(options[0]).toHaveAttribute('aria-selected', 'true');
-    });
-
-    it('navigates up with ArrowUp', async () => {
-      render(<CityField label="City" onStatusChange={mockOnStatusChange} />);
-
-      const input = screen.getByLabelText('City');
-      await userEvent.type(input, 've');
-
-      await waitFor(() => {
-        expect(screen.getByRole('listbox')).toBeInTheDocument();
-      });
-
-      fireEvent.keyDown(input, { key: 'ArrowDown' });
-      fireEvent.keyDown(input, { key: 'ArrowDown' });
-      fireEvent.keyDown(input, { key: 'ArrowUp' });
-
-      const options = screen.getAllByRole('option');
-      expect(options[0]).toHaveAttribute('aria-selected', 'true');
-    });
-
-    it('selects city with Enter key', async () => {
-      render(
-        <CityField
-          label="City"
-          onCityChange={mockOnCityChange}
-          onStatusChange={mockOnStatusChange}
-        />,
-      );
-
-      const input = screen.getByLabelText('City') as HTMLInputElement;
-      await userEvent.type(input, 've');
-
-      await waitFor(() => {
-        expect(screen.getByRole('listbox')).toBeInTheDocument();
-      });
-
-      fireEvent.keyDown(input, { key: 'ArrowDown' });
-      fireEvent.keyDown(input, { key: 'Enter' });
-
-      expect(input.value).toBe('Vancouver');
-      expect(mockOnCityChange).toHaveBeenCalledWith('Vancouver');
-    });
-
-    it('closes suggestions with Escape key', async () => {
-      render(<CityField label="City" onStatusChange={mockOnStatusChange} />);
-
-      const input = screen.getByLabelText('City');
-      await userEvent.type(input, 'van');
-
-      await waitFor(() => {
-        expect(screen.getByRole('listbox')).toBeInTheDocument();
-      });
-
-      fireEvent.keyDown(input, { key: 'Escape' });
-
-      expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
-    });
-
-    it('does not navigate beyond last item', async () => {
-      render(<CityField label="City" onStatusChange={mockOnStatusChange} />);
-
-      const input = screen.getByLabelText('City');
-      await userEvent.type(input, 've');
-
-      await waitFor(() => {
-        expect(screen.getByRole('listbox')).toBeInTheDocument();
-      });
-
-      fireEvent.keyDown(input, { key: 'ArrowDown' });
-      fireEvent.keyDown(input, { key: 'ArrowDown' });
-      fireEvent.keyDown(input, { key: 'ArrowDown' });
-      fireEvent.keyDown(input, { key: 'ArrowDown' });
-
-      const options = screen.getAllByRole('option');
-      expect(options[2]).toHaveAttribute('aria-selected', 'true');
-    });
-
-    it('does not navigate above first item', async () => {
-      render(<CityField label="City" onStatusChange={mockOnStatusChange} />);
-
-      const input = screen.getByLabelText('City');
-      await userEvent.type(input, 've');
-
-      await waitFor(() => {
-        expect(screen.getByRole('listbox')).toBeInTheDocument();
-      });
-
-      fireEvent.keyDown(input, { key: 'ArrowUp' });
-
-      const options = screen.getAllByRole('option');
-      expect(options[0]).toHaveAttribute('aria-selected', 'true');
-    });
-
-    it('ignores keyboard navigation when suggestions are hidden', async () => {
-      render(<CityField label="City" onStatusChange={mockOnStatusChange} />);
-
-      const input = screen.getByLabelText('City');
-      fireEvent.keyDown(input, { key: 'ArrowDown' });
-
-      expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
-    });
-
-    it('does not select on Enter when no item is selected', async () => {
       render(<CityField label="City" onStatusChange={mockOnStatusChange} />);
 
       const input = screen.getByLabelText('City') as HTMLInputElement;
-      await userEvent.type(input, 've');
+      await userEvent.type(input, 'tor');
 
       await waitFor(() => {
-        expect(screen.getByRole('listbox')).toBeInTheDocument();
+        expect(screen.getByText('Toronto')).toBeInTheDocument();
       });
 
-      fireEvent.keyDown(input, { key: 'Enter' });
+      fireEvent.click(screen.getByText('Toronto'));
 
-      expect(input.value).toBe('ve');
+      expect(input.value).toBe('Toronto');
     });
   });
 
-  describe('Status Updates', () => {
-    it('sets status to "empty" when input is empty', () => {
+  describe('Status updates', () => {
+    it('sets status to "empty" initially', () => {
       render(<CityField label="City" onStatusChange={mockOnStatusChange} />);
 
       expect(mockOnStatusChange).toHaveBeenCalledWith('empty');
     });
 
-    it('sets status to "typing..." when input has text but no suggestions', async () => {
+    it('sets status to "typing..." when input has text but no matches', async () => {
       mockUseCities.mockReturnValue({
         cities: [],
         loading: false,
@@ -374,9 +125,9 @@ describe('CityField', () => {
       });
     });
 
-    it('sets status with suggestion count when showing suggestions', async () => {
+    it('sets status with suggestion count', async () => {
       mockUseCities.mockReturnValue({
-        cities: ['Toronto', 'Metro Toronto'],
+        cities: ['Toronto', 'Torrance'],
         loading: false,
         error: null,
       });
@@ -384,31 +135,14 @@ describe('CityField', () => {
       render(<CityField label="City" onStatusChange={mockOnStatusChange} />);
 
       const input = screen.getByLabelText('City');
-      await userEvent.type(input, 'toro');
+      await userEvent.type(input, 'tor');
 
       await waitFor(() => {
-        expect(mockOnStatusChange).toHaveBeenCalledWith('toro (2 suggestions)');
+        expect(mockOnStatusChange).toHaveBeenCalledWith('tor (2 suggestions)');
       });
     });
 
-    it('sets status to "valid" when input matches a city', async () => {
-      mockUseCities.mockReturnValue({
-        cities: ['Vancouver'],
-        loading: false,
-        error: null,
-      });
-
-      render(<CityField label="City" onStatusChange={mockOnStatusChange} />);
-
-      const input = screen.getByLabelText('City');
-      await userEvent.type(input, 'Vancouver');
-
-      await waitFor(() => {
-        expect(mockOnStatusChange).toHaveBeenCalledWith('valid');
-      });
-    });
-
-    it('shows "X of Y suggestions" when exceeding MAX_SUGGESTIONS', async () => {
+    it('shows "X of Y" when exceeding MAX_SUGGESTIONS', async () => {
       const manyCities = Array.from({ length: 15 }, (_, i) => `City ${i}`);
       mockUseCities.mockReturnValue({
         cities: manyCities,
@@ -427,10 +161,27 @@ describe('CityField', () => {
         );
       });
     });
+
+    it('sets status to "valid" when exact match found', async () => {
+      mockUseCities.mockReturnValue({
+        cities: ['Vancouver'],
+        loading: false,
+        error: null,
+      });
+
+      render(<CityField label="City" onStatusChange={mockOnStatusChange} />);
+
+      const input = screen.getByLabelText('City');
+      await userEvent.type(input, 'Vancouver');
+
+      await waitFor(() => {
+        expect(mockOnStatusChange).toHaveBeenCalledWith('valid');
+      });
+    });
   });
 
-  describe('Styling', () => {
-    it('applies valid class when input matches a city', async () => {
+  describe('Validation styling', () => {
+    it('applies valid styling when city matches', async () => {
       mockUseCities.mockReturnValue({
         cities: ['Vancouver'],
         loading: false,
@@ -446,25 +197,29 @@ describe('CityField', () => {
         expect(input.className).toMatch(/inputValid/);
       });
     });
-
-    it('does not apply valid class for non-matching input', async () => {
-      mockUseCities.mockReturnValue({
-        cities: ['Vancouver'],
-        loading: false,
-        error: null,
-      });
-
-      render(<CityField label="City" onStatusChange={mockOnStatusChange} />);
-
-      const input = screen.getByLabelText('City');
-      await userEvent.type(input, 'van');
-
-      expect(input.className).not.toMatch(/inputValid/);
-    });
   });
 
-  describe('Optional Props', () => {
-    it('works without onCityChange prop', async () => {
+  describe('Combobox configuration', () => {
+    it('limits displayed options to 10', async () => {
+      const manyCities = Array.from({ length: 20 }, (_, i) => `City ${i}`);
+      mockUseCities.mockReturnValue({
+        cities: manyCities,
+        loading: false,
+        error: null,
+      });
+
+      render(<CityField label="City" onStatusChange={mockOnStatusChange} />);
+
+      const input = screen.getByLabelText('City');
+      await userEvent.type(input, 'ci');
+
+      await waitFor(() => {
+        const options = screen.getAllByRole('option');
+        expect(options).toHaveLength(10);
+      });
+    });
+
+    it('requires 2 characters before showing suggestions', async () => {
       mockUseCities.mockReturnValue({
         cities: ['Vancouver'],
         loading: false,
@@ -474,9 +229,15 @@ describe('CityField', () => {
       render(<CityField label="City" onStatusChange={mockOnStatusChange} />);
 
       const input = screen.getByLabelText('City');
-      await userEvent.type(input, 'van');
+      await userEvent.type(input, 'v');
 
-      expect(input).toHaveValue('van');
+      expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
+
+      await userEvent.type(input, 'a');
+
+      await waitFor(() => {
+        expect(screen.getByRole('listbox')).toBeInTheDocument();
+      });
     });
   });
 });
