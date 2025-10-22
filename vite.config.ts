@@ -1,4 +1,5 @@
 import react from '@vitejs/plugin-react';
+import path from 'path';
 import { defineConfig } from 'vitest/config';
 import allCities from './public/cities.json';
 
@@ -20,6 +21,14 @@ export default defineConfig({
       },
     },
   ],
+  resolve: {
+    alias: {
+      '@': path.resolve(__dirname, './src'),
+      '@/components': path.resolve(__dirname, './src/components'),
+      '@/hooks': path.resolve(__dirname, './src/hooks'),
+      '@/types': path.resolve(__dirname, './src/types'),
+    },
+  },
   test: {
     globals: true,
     environment: 'jsdom',

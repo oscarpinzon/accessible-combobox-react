@@ -1,11 +1,11 @@
+import { useCities } from '@/hooks/useCities';
 import '@testing-library/jest-dom/vitest';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { useCities } from '../hooks/useCities';
 import { CityField } from './CityField';
 
-vi.mock('../hooks/useCities');
+vi.mock('@/hooks/useCities');
 
 const mockUseCities = vi.mocked(useCities);
 
@@ -231,7 +231,6 @@ describe('CityField', () => {
       fireEvent.keyDown(input, { key: 'ArrowDown' });
 
       const options = screen.getAllByRole('option');
-      expect(options[0]).toHaveClass('selected');
       expect(options[0]).toHaveAttribute('aria-selected', 'true');
     });
 
@@ -250,7 +249,7 @@ describe('CityField', () => {
       fireEvent.keyDown(input, { key: 'ArrowUp' });
 
       const options = screen.getAllByRole('option');
-      expect(options[0]).toHaveClass('selected');
+      expect(options[0]).toHaveAttribute('aria-selected', 'true');
     });
 
     it('selects city with Enter key', async () => {
@@ -307,7 +306,7 @@ describe('CityField', () => {
       fireEvent.keyDown(input, { key: 'ArrowDown' });
 
       const options = screen.getAllByRole('option');
-      expect(options[2]).toHaveClass('selected');
+      expect(options[2]).toHaveAttribute('aria-selected', 'true');
     });
 
     it('does not navigate above first item', async () => {
@@ -323,7 +322,7 @@ describe('CityField', () => {
       fireEvent.keyDown(input, { key: 'ArrowUp' });
 
       const options = screen.getAllByRole('option');
-      expect(options[0]).toHaveClass('selected');
+      expect(options[0]).toHaveAttribute('aria-selected', 'true');
     });
 
     it('ignores keyboard navigation when suggestions are hidden', async () => {
@@ -444,7 +443,7 @@ describe('CityField', () => {
       await userEvent.type(input, 'Vancouver');
 
       await waitFor(() => {
-        expect(input).toHaveClass('valid');
+        expect(input.className).toMatch(/inputValid/);
       });
     });
 
@@ -460,7 +459,7 @@ describe('CityField', () => {
       const input = screen.getByLabelText('City');
       await userEvent.type(input, 'van');
 
-      expect(input).not.toHaveClass('valid');
+      expect(input.className).not.toMatch(/inputValid/);
     });
   });
 

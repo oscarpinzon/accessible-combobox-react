@@ -1,7 +1,7 @@
+import { CityField } from '@/components/CityField';
+import { StatusBar } from '@/components/StatusBar';
 import { useState } from 'react';
 import './App.css';
-import { CityField } from './components/CityField';
-import { StatusBar } from './components/StatusBar';
 
 export default function App() {
   const [status, setStatus] = useState<string>('empty');
