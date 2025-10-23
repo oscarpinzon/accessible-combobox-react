@@ -22,4 +22,24 @@ describe('StatusBar', () => {
     render(<StatusBar status="" />);
     expect(screen.getByTestId('status-bar')).toBeInTheDocument();
   });
+
+  describe('Accessibilty - Live Region', () => {
+    it('has role="status"', () => {
+      render(<StatusBar status="test" />);
+      const statusBar = screen.getByRole('status');
+      expect(statusBar).toBeInTheDocument();
+    });
+
+    it('has aria-live="polite"', () => {
+      render(<StatusBar status="test" />);
+      const statusBar = screen.getByRole('status');
+      expect(statusBar).toHaveAttribute('aria-live', 'polite');
+    });
+
+    it('has aria-atomic="true"', () => {
+      render(<StatusBar status="test" />);
+      const statusBar = screen.getByRole('status');
+      expect(statusBar).toHaveAttribute('aria-atomic', 'true');
+    });
+  });
 });
