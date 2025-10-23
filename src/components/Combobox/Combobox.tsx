@@ -20,6 +20,7 @@ export const Combobox: React.FC<ComboboxProps> = ({
     useState<boolean>(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const suggestionListRef = useRef<HTMLUListElement>(null);
+  const optionRefs = useRef<(HTMLLIElement | null)[]>([]);
 
   const listboxId = `${id}-listbox`;
   const labelId = `${id}-label`;
@@ -46,6 +47,18 @@ export const Combobox: React.FC<ComboboxProps> = ({
   useEffect(() => {
     setSelectedIndex(-1);
   }, [options]);
+
+  useEffect(() => {
+    if (selectedIndex >= 0 && selectedIndex < displayedOptions.length) {
+      const selectedOption = optionRefs.current[selectedIndex];
+      if (selectedOption) {
+        selectedOption.scrollIntoView({
+          block: 'nearest',
+          behavior: 'smooth',
+        });
+      }
+    }
+  }, [selectedIndex, displayedOptions.length]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     onChange(e.target.value);
@@ -136,6 +149,9 @@ export const Combobox: React.FC<ComboboxProps> = ({
               <li
                 key={option.value}
                 id={`${id}-option-${index}`}
+                ref={(el) => {
+                  optionRefs.current[index] = el;
+                }}
                 role="option"
                 aria-selected={selectedIndex === index}
                 className={

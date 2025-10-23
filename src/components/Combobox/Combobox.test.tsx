@@ -692,4 +692,134 @@ describe('Combobox', () => {
       expect(input.className).toContain('custom-class');
     });
   });
+
+  describe('Focus Management', () => {
+    it('maintains focus on input after option selection', () => {
+      render(
+        <Combobox
+          id="test"
+          label="Fruit"
+          value="ap"
+          options={mockOptions}
+          onChange={mockOnChange}
+        />,
+      );
+
+      const input = screen.getByRole('combobox');
+
+      fireEvent.click(screen.getByText('Apple'));
+
+      expect(input).toHaveFocus();
+    });
+
+    it('maintains focus on input after keyboard selection', () => {
+      render(
+        <Combobox
+          id="test"
+          label="Fruit"
+          value="ap"
+          options={mockOptions}
+          onChange={mockOnChange}
+        />,
+      );
+
+      const input = screen.getByRole('combobox');
+      input.focus();
+
+      fireEvent.keyDown(input, { key: 'ArrowDown' });
+      fireEvent.keyDown(input, { key: 'Enter' });
+
+      expect(input).toHaveFocus();
+    });
+
+    it('scrolls highlighted option into view', () => {
+      const manyOptions = Array.from({ length: 20 }, (_, i) => ({
+        value: `option-${i}`,
+        label: `Option ${i}`,
+      }));
+
+      render(
+        <Combobox
+          id="test"
+          label="Items"
+          value="opt"
+          options={manyOptions}
+          onChange={mockOnChange}
+          maxDisplayed={20}
+        />,
+      );
+
+      const input = screen.getByRole('combobox');
+      const options = screen.getAllByRole('option');
+
+      options.forEach((option) => {
+        option.scrollIntoView = vi.fn();
+      });
+
+      fireEvent.keyDown(input, { key: 'ArrowDown' });
+      fireEvent.keyDown(input, { key: 'ArrowDown' });
+      fireEvent.keyDown(input, { key: 'ArrowDown' });
+      fireEvent.keyDown(input, { key: 'ArrowDown' });
+      fireEvent.keyDown(input, { key: 'ArrowDown' });
+
+      expect(options[4].scrollIntoView).toHaveBeenCalledWith({
+        block: 'nearest',
+        behavior: 'smooth',
+      });
+    });
+
+    it('does not scroll when listbox is closed', () => {
+      render(
+        <Combobox
+          id="test"
+          label="Fruit"
+          value=""
+          options={mockOptions}
+          onChange={mockOnChange}
+        />,
+      );
+
+      const input = screen.getByRole('combobox');
+
+      // Try to navigate when closed
+      fireEvent.keyDown(input, { key: 'ArrowDown' });
+
+      // No options rendered, so no scrolling
+      expect(screen.queryByRole('option')).not.toBeInTheDocument();
+    });
+
+    it('handles scrolling for first and last options', () => {
+      const threeOptions = [
+        { value: 'Apple', label: 'Apple' },
+        { value: 'Appricot', label: 'Appricot' },
+        { value: 'App', label: 'App' },
+      ];
+
+      render(
+        <Combobox
+          id="test"
+          label="Items"
+          value="ap"
+          options={threeOptions}
+          onChange={mockOnChange}
+        />,
+      );
+
+      const input = screen.getByRole('combobox');
+      const options = screen.getAllByRole('option');
+
+      options.forEach((option) => {
+        option.scrollIntoView = vi.fn();
+      });
+
+      // Navigate to first
+      fireEvent.keyDown(input, { key: 'ArrowDown' });
+      expect(options[0].scrollIntoView).toHaveBeenCalled();
+
+      // Navigate to last
+      fireEvent.keyDown(input, { key: 'ArrowDown' });
+      fireEvent.keyDown(input, { key: 'ArrowDown' });
+      expect(options[2].scrollIntoView).toHaveBeenCalled();
+    });
+  });
 });
