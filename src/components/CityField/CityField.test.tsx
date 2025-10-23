@@ -138,7 +138,9 @@ describe('CityField', () => {
       await userEvent.type(input, 'tor');
 
       await waitFor(() => {
-        expect(mockOnStatusChange).toHaveBeenCalledWith('tor (2 suggestions)');
+        expect(mockOnStatusChange).toHaveBeenCalledWith(
+          'tor (2 suggestions available)',
+        );
       });
     });
 
@@ -157,7 +159,7 @@ describe('CityField', () => {
 
       await waitFor(() => {
         expect(mockOnStatusChange).toHaveBeenCalledWith(
-          'ci (10 of 15 suggestions)',
+          'ci (showing 10 of 15 suggestions)',
         );
       });
     });
