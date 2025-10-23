@@ -30,6 +30,11 @@ export const Combobox: React.FC<ComboboxProps> = ({
     (option) => option.value.toLowerCase() === value.toLowerCase(),
   );
 
+  const activeDescendantId =
+    selectedIndex >= 0 && selectedIndex < displayedOptions.length
+      ? `${id}-option-${selectedIndex}`
+      : undefined;
+
   useEffect(() => {
     setIsSuggestionVisible(
       value.length >= minCharsForSuggestions &&
@@ -49,6 +54,7 @@ export const Combobox: React.FC<ComboboxProps> = ({
   const handleOptionSelect = (option: ComboboxOption) => {
     onChange(option.value);
     setIsSuggestionVisible(false);
+    setSelectedIndex(-1);
     onSelect?.(option.value);
     inputRef.current?.focus();
   };
@@ -79,6 +85,7 @@ export const Combobox: React.FC<ComboboxProps> = ({
       case 'Escape':
         e.preventDefault();
         setIsSuggestionVisible(false);
+        setSelectedIndex(-1);
         break;
 
       default:
@@ -108,6 +115,7 @@ export const Combobox: React.FC<ComboboxProps> = ({
           aria-autocomplete="list"
           aria-expanded={isSuggestionVisible}
           aria-controls={isSuggestionVisible ? listboxId : undefined}
+          aria-activedescendant={activeDescendantId}
           aria-labelledby={labelId}
           value={value}
           onChange={handleInputChange}

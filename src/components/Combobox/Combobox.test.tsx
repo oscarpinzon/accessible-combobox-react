@@ -220,6 +220,89 @@ describe('Combobox', () => {
       const options = screen.getAllByRole('option');
       expect(options[0]).toHaveAttribute('aria-selected');
     });
+
+    it('sets aria-activedescendant when option is highlighted', () => {
+      render(
+        <Combobox
+          id="test"
+          label="Fruit"
+          value="ap"
+          options={mockOptions}
+          onChange={mockOnChange}
+        />,
+      );
+
+      const input = screen.getByRole('combobox');
+
+      expect(input).not.toHaveAttribute('aria-activedescendant');
+
+      fireEvent.keyDown(input, { key: 'ArrowDown' });
+
+      expect(input).toHaveAttribute('aria-activedescendant', 'test-option-0');
+    });
+
+    it('updates aria-activedescendant when navigating', () => {
+      render(
+        <Combobox
+          id="test"
+          label="Fruit"
+          value="ap"
+          options={mockOptions}
+          onChange={mockOnChange}
+        />,
+      );
+
+      const input = screen.getByRole('combobox');
+
+      fireEvent.keyDown(input, { key: 'ArrowDown' });
+      expect(input).toHaveAttribute('aria-activedescendant', 'test-option-0');
+
+      fireEvent.keyDown(input, { key: 'ArrowDown' });
+      expect(input).toHaveAttribute('aria-activedescendant', 'test-option-1');
+
+      fireEvent.keyDown(input, { key: 'ArrowUp' });
+      expect(input).toHaveAttribute('aria-activedescendant', 'test-option-0');
+    });
+
+    it('removes aria-activedescendant when listbox closes', () => {
+      render(
+        <Combobox
+          id="test"
+          label="Fruit"
+          value="ap"
+          options={mockOptions}
+          onChange={mockOnChange}
+        />,
+      );
+
+      const input = screen.getByRole('combobox');
+
+      fireEvent.keyDown(input, { key: 'ArrowDown' });
+      expect(input).toHaveAttribute('aria-activedescendant', 'test-option-0');
+
+      fireEvent.keyDown(input, { key: 'Escape' });
+      expect(input).not.toHaveAttribute('aria-activedescendant');
+    });
+
+    it('aria-activedescendant matches selected option ID', () => {
+      render(
+        <Combobox
+          id="test"
+          label="Fruit"
+          value="ap"
+          options={mockOptions}
+          onChange={mockOnChange}
+        />,
+      );
+
+      const input = screen.getByRole('combobox');
+      fireEvent.keyDown(input, { key: 'ArrowDown' });
+
+      const activeId = input.getAttribute('aria-activedescendant');
+      const activeOption = screen.getAllByRole('option')[0];
+
+      expect(activeId).toBe(activeOption.id);
+    });
   });
 
   describe('Suggestions Display', () => {
