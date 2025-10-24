@@ -7,6 +7,10 @@ A production-ready React combobox with full keyboard navigation, screen reader s
 [![Vite](https://img.shields.io/badge/Vite-7-646cff)](https://vitejs.dev/)
 [![Vitest](https://img.shields.io/badge/Vitest-4-729B1B)](https://vitest.dev/)
 
+[![CI](https://github.com/oscarpinzon/accessible-combobox-react/actions/workflows/ci.yml/badge.svg)](https://github.com/oscarpinzon/accessible-combobox-react/actions/workflows/ci.yml)
+[![Deploy](https://github.com/oscarpinzon/accessible-combobox-react/actions/workflows/deploy.yml/badge.svg)](https://github.com/oscarpinzon/accessible-combobox-react/actions/workflows/deploy.yml)
+[![Coverage](https://img.shields.io/badge/coverage-95%25-brightgreen)](https://github.com/oscarpinzon/accessible-combobox-react)
+
 ## ✨ Highlights
 
 - 🎯 **Generic & Reusable** - Works with any data source, not just cities
