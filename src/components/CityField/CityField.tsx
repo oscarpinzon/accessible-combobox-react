@@ -11,7 +11,7 @@ export const CityField: React.FC<CityFieldProps> = ({
   onStatusChange,
 }) => {
   const [city, setCity] = useState<string>('');
-  const { cities } = useCities(city);
+  const { cities, loading, error } = useCities(city);
 
   const cityOptions = cities.map((c) => ({ value: c, label: c }));
 
@@ -25,8 +25,18 @@ export const CityField: React.FC<CityFieldProps> = ({
       return;
     }
 
+    if (loading) {
+      onStatusChange('loading...');
+      return;
+    }
+
+    if (error) {
+      onStatusChange('error loading cities');
+      return;
+    }
+
     if (cities.length === 0) {
-      onStatusChange('typing...');
+      onStatusChange('no results');
       return;
     }
 
@@ -48,7 +58,7 @@ export const CityField: React.FC<CityFieldProps> = ({
     } else {
       onStatusChange(`${city} (${cities.length} suggestions available)`);
     }
-  }, [city, cities, onStatusChange]);
+  }, [city, cities, loading, error, onStatusChange]);
 
   const handleCityChange = (value: string) => {
     setCity(value);
@@ -58,6 +68,14 @@ export const CityField: React.FC<CityFieldProps> = ({
   const handleCitySelect = (value: string) => {
     onCityChange?.(value);
   };
+
+  const helperText = 'Start typing to search for cities';
+
+  const errorText = error
+    ? 'Failed to load cities. Please try again.'
+    : city.length > 0 && !loading && cities.length === 0 && city.length >= 2
+      ? 'No cities found matching your search.'
+      : undefined;
 
   return (
     <Combobox
@@ -71,6 +89,9 @@ export const CityField: React.FC<CityFieldProps> = ({
       maxDisplayed={MAX_SUGGESTIONS}
       isValid={isValidCity}
       minCharsForSuggestions={2}
+      helperText={helperText}
+      errorText={errorText}
+      isLoading={loading}
     />
   );
 };

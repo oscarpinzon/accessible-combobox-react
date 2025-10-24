@@ -16,7 +16,7 @@ export default function App() {
         <h1>Accessible Combobox (React + TS)</h1>
 
         <CityField
-          label="City"
+          label="Canadian Cities"
           onCityChange={handleCityChange}
           onStatusChange={setStatus}
         />

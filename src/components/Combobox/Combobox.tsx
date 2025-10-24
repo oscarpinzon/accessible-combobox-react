@@ -14,6 +14,10 @@ export const Combobox: React.FC<ComboboxProps> = ({
   className = '',
   isValid,
   minCharsForSuggestions = 2,
+  helperText,
+  errorText,
+  isLoading = false,
+  disabled = false,
 }) => {
   const [selectedIndex, setSelectedIndex] = useState<number>(-1);
   const [isSuggestionVisible, setIsSuggestionVisible] =
@@ -24,6 +28,8 @@ export const Combobox: React.FC<ComboboxProps> = ({
 
   const listboxId = `${id}-listbox`;
   const labelId = `${id}-label`;
+  const helperId = helperText ? `${id}-helper` : undefined;
+  const errorId = errorText ? `${id}-error` : undefined;
 
   const displayedOptions = options.slice(0, maxDisplayed);
 
@@ -36,13 +42,25 @@ export const Combobox: React.FC<ComboboxProps> = ({
       ? `${id}-option-${selectedIndex}`
       : undefined;
 
+  const ariaDescribedBy =
+    [helperId, errorId].filter(Boolean).join(' ') || undefined;
+
   useEffect(() => {
     setIsSuggestionVisible(
       value.length >= minCharsForSuggestions &&
         options.length > 0 &&
-        !hasExactMatch,
+        !hasExactMatch &&
+        !isLoading &&
+        !disabled,
     );
-  }, [value, options, hasExactMatch, minCharsForSuggestions]);
+  }, [
+    value,
+    options,
+    hasExactMatch,
+    minCharsForSuggestions,
+    isLoading,
+    disabled,
+  ]);
 
   useEffect(() => {
     setSelectedIndex(-1);
@@ -106,9 +124,23 @@ export const Combobox: React.FC<ComboboxProps> = ({
     }
   };
 
+  const handleOptionTouchEnd = (
+    option: ComboboxOption,
+    e: React.TouchEvent,
+  ) => {
+    e.preventDefault();
+    handleOptionSelect(option);
+  };
+
+  const hasError = Boolean(errorText);
+  const showLoadingIndicator =
+    isLoading && value.length >= minCharsForSuggestions;
+
   const inputClassName = [
     styles.input,
     isValid && isValid(value) ? styles.inputValid : '',
+    hasError ? styles.inputError : '',
+    disabled ? styles.inputDisabled : '',
     className,
   ]
     .filter(Boolean)
@@ -118,7 +150,19 @@ export const Combobox: React.FC<ComboboxProps> = ({
     <div className={styles.container}>
       <label id={labelId} htmlFor={id} className={styles.label}>
         {label}
+        {isLoading && (
+          <span className={styles.loadingIndicator} aria-hidden="true">
+            (loading...)
+          </span>
+        )}
       </label>
+
+      {helperText && (
+        <div id={helperId} className={styles.helperText}>
+          {helperText}
+        </div>
+      )}
+
       <div className={styles.wrapper}>
         <input
           id={id}
@@ -130,12 +174,22 @@ export const Combobox: React.FC<ComboboxProps> = ({
           aria-controls={isSuggestionVisible ? listboxId : undefined}
           aria-activedescendant={activeDescendantId}
           aria-labelledby={labelId}
+          aria-describedby={ariaDescribedBy}
+          aria-invalid={hasError}
+          aria-busy={isLoading}
           value={value}
           onChange={handleInputChange}
           onKeyDown={handleKeyDown}
           placeholder={placeholder}
           className={inputClassName}
+          disabled={disabled}
         />
+
+        {showLoadingIndicator && (
+          <div className={styles.loadingSpinner} aria-hidden="true">
+            <span className={styles.spinner} />
+          </div>
+        )}
 
         {isSuggestionVisible && (
           <ul
@@ -160,6 +214,7 @@ export const Combobox: React.FC<ComboboxProps> = ({
                     : styles.option
                 }
                 onClick={() => handleOptionSelect(option)}
+                onTouchEnd={(e) => handleOptionTouchEnd(option, e)}
               >
                 {option.label}
               </li>
@@ -167,6 +222,17 @@ export const Combobox: React.FC<ComboboxProps> = ({
           </ul>
         )}
       </div>
+
+      {errorText && (
+        <div
+          id={errorId}
+          className={styles.errorText}
+          role="alert"
+          aria-live="assertive"
+        >
+          {errorText}
+        </div>
+      )}
     </div>
   );
 };

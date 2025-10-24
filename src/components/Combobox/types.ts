@@ -1,8 +1,3 @@
-export interface ComboboxOption {
-  value: string;
-  label: string;
-}
-
 export interface ComboboxProps {
   id: string;
   label: string;
@@ -15,4 +10,13 @@ export interface ComboboxProps {
   className?: string;
   isValid?: (value: string) => boolean;
   minCharsForSuggestions?: number;
+  helperText?: string;
+  errorText?: string;
+  isLoading?: boolean;
+  disabled?: boolean;
+}
+
+export interface ComboboxOption {
+  value: string;
+  label: string;
 }

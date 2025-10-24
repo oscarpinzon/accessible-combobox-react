@@ -108,7 +108,7 @@ describe('CityField', () => {
       expect(mockOnStatusChange).toHaveBeenCalledWith('empty');
     });
 
-    it('sets status to "typing..." when input has text but no matches', async () => {
+    it('sets status to "no results" when input has text but no matches', async () => {
       mockUseCities.mockReturnValue({
         cities: [],
         loading: false,
@@ -121,7 +121,47 @@ describe('CityField', () => {
       await userEvent.type(input, 'xyz');
 
       await waitFor(() => {
-        expect(mockOnStatusChange).toHaveBeenCalledWith('typing...');
+        expect(mockOnStatusChange).toHaveBeenCalledWith('no results');
+      });
+    });
+
+    it('sets status to "loading..." when fetching cities', async () => {
+      render(<CityField label="City" onStatusChange={mockOnStatusChange} />);
+
+      const input = screen.getByLabelText('City');
+
+      // Type first char - still empty status
+      await userEvent.type(input, 'v');
+
+      // Now set loading BEFORE typing second char
+      mockUseCities.mockReturnValue({
+        cities: [],
+        loading: true,
+        error: null,
+      });
+
+      // Type second char - triggers loading check
+      await userEvent.type(input, 'a');
+
+      await waitFor(() => {
+        expect(mockOnStatusChange).toHaveBeenCalledWith('loading...');
+      });
+    });
+
+    it('sets status to error message when fetch fails', async () => {
+      mockUseCities.mockReturnValue({
+        cities: [],
+        loading: false,
+        error: new Error('Network error'),
+      });
+
+      render(<CityField label="City" onStatusChange={mockOnStatusChange} />);
+
+      const input = screen.getByLabelText('City');
+      await userEvent.type(input, 'va');
+
+      await waitFor(() => {
+        expect(mockOnStatusChange).toHaveBeenCalledWith('error loading cities');
       });
     });
 

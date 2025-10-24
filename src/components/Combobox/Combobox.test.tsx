@@ -822,4 +822,233 @@ describe('Combobox', () => {
       expect(options[2].scrollIntoView).toHaveBeenCalled();
     });
   });
+
+  describe('Advanced Features', () => {
+    describe('Helper Text', () => {
+      it('displays helper text when provided', () => {
+        render(
+          <Combobox
+            id="test"
+            label="Fruit"
+            value=""
+            options={mockOptions}
+            onChange={mockOnChange}
+            helperText="Select your favorite fruit"
+          />,
+        );
+
+        expect(
+          screen.getByText('Select your favorite fruit'),
+        ).toBeInTheDocument();
+      });
+
+      it('associates helper text with input via aria-describedby', () => {
+        render(
+          <Combobox
+            id="test"
+            label="Fruit"
+            value=""
+            options={mockOptions}
+            onChange={mockOnChange}
+            helperText="Select your favorite fruit"
+          />,
+        );
+
+        const input = screen.getByRole('combobox');
+        expect(input).toHaveAttribute('aria-describedby', 'test-helper');
+        expect(screen.getByText('Select your favorite fruit')).toHaveAttribute(
+          'id',
+          'test-helper',
+        );
+      });
+    });
+
+    describe('Error States', () => {
+      it('displays error text when provided', () => {
+        render(
+          <Combobox
+            id="test"
+            label="Fruit"
+            value="xyz"
+            options={[]}
+            onChange={mockOnChange}
+            errorText="No results found"
+          />,
+        );
+
+        expect(screen.getByText('No results found')).toBeInTheDocument();
+      });
+
+      it('marks input as invalid when error is present', () => {
+        render(
+          <Combobox
+            id="test"
+            label="Fruit"
+            value="xyz"
+            options={[]}
+            onChange={mockOnChange}
+            errorText="No results found"
+          />,
+        );
+
+        const input = screen.getByRole('combobox');
+        expect(input).toHaveAttribute('aria-invalid', 'true');
+      });
+
+      it('error has role="alert" and aria-live="assertive"', () => {
+        render(
+          <Combobox
+            id="test"
+            label="Fruit"
+            value="xyz"
+            options={[]}
+            onChange={mockOnChange}
+            errorText="No results found"
+          />,
+        );
+
+        const error = screen.getByText('No results found');
+        expect(error).toHaveAttribute('role', 'alert');
+        expect(error).toHaveAttribute('aria-live', 'assertive');
+      });
+
+      it('associates error with input via aria-describedby', () => {
+        render(
+          <Combobox
+            id="test"
+            label="Fruit"
+            value="xyz"
+            options={[]}
+            onChange={mockOnChange}
+            errorText="No results found"
+          />,
+        );
+
+        const input = screen.getByRole('combobox');
+        expect(input).toHaveAttribute('aria-describedby', 'test-error');
+      });
+
+      it('combines helper and error in aria-describedby', () => {
+        render(
+          <Combobox
+            id="test"
+            label="Fruit"
+            value="xyz"
+            options={[]}
+            onChange={mockOnChange}
+            helperText="Type to search"
+            errorText="No results found"
+          />,
+        );
+
+        const input = screen.getByRole('combobox');
+        expect(input).toHaveAttribute(
+          'aria-describedby',
+          'test-helper test-error',
+        );
+      });
+    });
+
+    describe('Loading States', () => {
+      it('sets aria-busy when loading', () => {
+        render(
+          <Combobox
+            id="test"
+            label="Fruit"
+            value="ap"
+            options={[]}
+            onChange={mockOnChange}
+            isLoading={true}
+          />,
+        );
+
+        const input = screen.getByRole('combobox');
+        expect(input).toHaveAttribute('aria-busy', 'true');
+      });
+
+      it('does not show listbox while loading', () => {
+        render(
+          <Combobox
+            id="test"
+            label="Fruit"
+            value="ap"
+            options={mockOptions}
+            onChange={mockOnChange}
+            isLoading={true}
+          />,
+        );
+
+        expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
+      });
+
+      it('shows loading indicator in label', () => {
+        render(
+          <Combobox
+            id="test"
+            label="Fruit"
+            value="ap"
+            options={[]}
+            onChange={mockOnChange}
+            isLoading={true}
+          />,
+        );
+
+        expect(screen.getByText('(loading...)')).toBeInTheDocument();
+      });
+    });
+
+    describe('Disabled State', () => {
+      it('disables input when disabled prop is true', () => {
+        render(
+          <Combobox
+            id="test"
+            label="Fruit"
+            value=""
+            options={mockOptions}
+            onChange={mockOnChange}
+            disabled={true}
+          />,
+        );
+
+        const input = screen.getByRole('combobox');
+        expect(input).toBeDisabled();
+      });
+
+      it('does not open listbox when disabled', () => {
+        render(
+          <Combobox
+            id="test"
+            label="Fruit"
+            value="ap"
+            options={mockOptions}
+            onChange={mockOnChange}
+            disabled={true}
+          />,
+        );
+
+        expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
+      });
+    });
+
+    describe('Touch Support', () => {
+      it('handles touch events on options', () => {
+        render(
+          <Combobox
+            id="test"
+            label="Fruit"
+            value="ap"
+            options={mockOptions}
+            onChange={mockOnChange}
+            onSelect={mockOnSelect}
+          />,
+        );
+
+        const option = screen.getByText('Apple');
+        fireEvent.touchEnd(option);
+
+        expect(mockOnChange).toHaveBeenCalledWith('apple');
+        expect(mockOnSelect).toHaveBeenCalledWith('apple');
+      });
+    });
+  });
 });
