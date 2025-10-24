@@ -9,9 +9,9 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "test": "vitest",
-    "test:run": "vitest run",
-    "test:unit": "vitest src/components",
-    "test:integration": "vitest src/__tests__/integration",
+    "test:watch": "vitest --watch",
+    "test:a11y": "vitest a11y",
+    "test:integration": "vitest integration",
     "test:coverage": "vitest --coverage",
     "type-check": "tsc --noEmit",
     "format": "prettier -w ."
