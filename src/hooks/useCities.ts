@@ -12,85 +12,98 @@ export const useCities = (query: string): UseCitiesResult => {
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<Error | null>(null);
 
-  // For Github Pages, respect the repo base path
+  // Ensure base URL has trailing slash for correct path resolution
   const base = import.meta.env.BASE_URL || '/';
+  const baseWithSlash = base.endsWith('/') ? base : `${base}/`;
 
-  // Preload static data once (for fallback + client-side filtering)
+  // Preload all cities once on mount
   useEffect(() => {
     let cancelled = false;
     if (all) return;
 
-    fetch(`${base}cities.json`)
+    const url = `${baseWithSlash}cities.json`;
+
+    fetch(url)
       .then((r) => (r.ok ? r.json() : []))
       .then((data) => {
         if (!cancelled) setAll(data as string[]);
       })
       .catch(() => {
-        /* ignore, we can still rely on dev route */
+        // Silently fail - error will be shown when user searches
       });
 
     return () => {
       cancelled = true;
     };
-  }, [all, base]);
+  }, [all, baseWithSlash]);
 
+  // Search cities based on query
   useEffect(() => {
-    // Don't fetch if query is too short
+    // Require minimum 2 characters
     if (query.length < 2) {
       setCities([]);
       return;
     }
 
     let cancelled = false;
+
     const run = async () => {
       setLoading(true);
       setError(null);
+
       try {
-        // Try dev mock endpoint first (works locally)
-        const url = `${base}cities?q=${encodeURIComponent(query)}`;
-        const res = await fetch(url);
+        // In development, try the mock API endpoint first
+        if (import.meta.env.DEV) {
+          try {
+            const url = `/cities?q=${encodeURIComponent(query)}`;
+            const res = await fetch(url);
 
-        if (res.ok) {
-          const data = await res.json(); // expects array of strings
-          if (!cancelled) setCities(data);
-          return;
+            if (res.ok) {
+              const data = await res.json();
+              if (!cancelled) {
+                setCities(data);
+                setLoading(false);
+              }
+              return;
+            }
+          } catch {
+            // Fall through to static data
+          }
         }
 
-        // Fallback to static JSON (Pages/prod)
+        // Production or fallback: filter preloaded static data
         if (all) {
           const q = query.toLowerCase();
           const filtered = all
             .filter((n) => n.toLowerCase().includes(q))
             .slice(0, 20);
-          if (!cancelled) setCities(filtered);
-          return;
-        }
-
-        throw new Error(`HTTP ${res.status}`);
-      } catch (e) {
-        // Final fallback if everything fails
-        if (all) {
-          const q = query.toLowerCase();
-          const filtered = all
-            .filter((n) => n.toLowerCase().includes(q))
-            .slice(0, 20);
-          if (!cancelled) setCities(filtered);
-        } else {
           if (!cancelled) {
-            setError(e instanceof Error ? e : new Error('Unknown error'));
+            setCities(filtered);
+          }
+        } else {
+          // Still waiting for static data to load
+          if (!cancelled) {
             setCities([]);
           }
         }
+      } catch (e) {
+        if (!cancelled) {
+          setError(e instanceof Error ? e : new Error('Failed to load cities'));
+          setCities([]);
+        }
       } finally {
-        if (!cancelled) setLoading(false);
+        if (!cancelled) {
+          setLoading(false);
+        }
       }
     };
 
     run();
+
     return () => {
       cancelled = true;
     };
-  }, [query, all, base]);
+  }, [query, all]);
 
   return { cities, loading, error };
 };
