@@ -4,6 +4,7 @@ import { defineConfig } from 'vitest/config';
 import allCities from './public/cities.json';
 
 export default defineConfig({
+  base: '/accessible-combobox-react',
   plugins: [
     react(),
     {
