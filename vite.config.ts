@@ -42,6 +42,8 @@ export default defineConfig({
         'node_modules/',
         'src/**/*.test.{ts,tsx}',
         'src/**/*.a11y.test.{ts,tsx}',
+        'src/**/*.stories.{ts,tsx}',
+        '.storybook/**',
         'src/__tests__/',
         'vitest.setup.ts',
         'vite.config.ts',

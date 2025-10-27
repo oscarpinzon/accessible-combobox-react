@@ -51,7 +51,8 @@ export const Combobox: React.FC<ComboboxProps> = ({
         options.length > 0 &&
         !hasExactMatch &&
         !isLoading &&
-        !disabled,
+        !disabled &&
+        !errorText,
     );
   }, [
     value,
@@ -60,6 +61,7 @@ export const Combobox: React.FC<ComboboxProps> = ({
     minCharsForSuggestions,
     isLoading,
     disabled,
+    errorText,
   ]);
 
   useEffect(() => {
