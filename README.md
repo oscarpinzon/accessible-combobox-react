@@ -26,6 +26,17 @@ A production-ready React combobox with full keyboard navigation, screen reader s
 
 👉 **[View Live Demo](https://oscarpinzon.github.io/accessible-combobox-react/)**
 
+### Component Documentation
+
+📚 **[View Storybook](https://oscarpinzon.github.io/accessible-combobox-react/storybook/)**
+
+Or run locally:
+
+```bash
+npm run storybook
+# Opens at http://localhost:6006
+```
+
 ### Quick Start
 
 ```bash
