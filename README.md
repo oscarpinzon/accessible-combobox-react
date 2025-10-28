@@ -419,11 +419,9 @@ npm run test:coverage
 
 ### Developer Experience
 
-- [ ] Storybook for component documentation and demos
 - [ ] Publish to npm as standalone package
 - [ ] E2E tests with Playwright
 - [ ] Visual regression tests
-- [ ] Component playground in docs
 
 ## 📄 License
 
