@@ -56,7 +56,7 @@ npm run dev
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/accessible-combobox-react.git
+git clone https://github.com/oscarpinzon/accessible-combobox-react.git
 cd accessible-combobox-react
 
 # Install dependencies
